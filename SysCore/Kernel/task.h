@@ -78,6 +78,7 @@ typedef struct _thread {
    uint32_t    priority;
    int         state;
    ktime_t     sleepTimeDelta;
+   int		   life_span;
 }thread;
 
 typedef struct _process {
@@ -104,6 +105,7 @@ extern void   execute_idle         ();
 extern bool   queue_insert         (thread t);
 extern void*  create_kernel_stack  ();
 extern void   thread_sleep         (uint32_t ms);
+extern thread queue_remove		   ();
 
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS

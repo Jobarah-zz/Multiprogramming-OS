@@ -242,6 +242,7 @@ void kthread_2 () {
 		else
 			if (col-- == 1)
 				dir=true;
+		
 	}
 }
 

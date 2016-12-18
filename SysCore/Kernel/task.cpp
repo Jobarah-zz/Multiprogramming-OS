@@ -270,6 +270,7 @@ thread  thread_create (void (_cdecl *entry)(void), uint32_t esp, bool is_kernel)
 	t.priority = 0;
 	t.state    = THREAD_RUN;
 	t.sleepTimeDelta = 0;
+	t.life_span = 0;
 	return t;
 }
 
@@ -308,9 +309,10 @@ void dispatch () {
 	/* We do Round Robin here, just remove and insert. */
 next_thread:
 	queue_remove();
+	if(_currentThreadLocal.life_span == 1000) return;
+	_currentThreadLocal.life_span++;
 	queue_insert(_currentThreadLocal);
 	_currentThreadLocal = queue_get();
-
 	/* make sure this thread is not blocked. */
 	if (_currentThreadLocal.state & THREAD_BLOCK_STATE) {
 
