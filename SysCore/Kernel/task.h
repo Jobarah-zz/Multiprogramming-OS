@@ -68,6 +68,7 @@ typedef unsigned int ktime_t;
 /* we may have multiple block state flags. */
 #define THREAD_BLOCK_STATE  THREAD_BLOCK_SLEEP
 
+
 struct _process;
 typedef struct _thread {
    uint32_t    esp;
@@ -106,6 +107,7 @@ extern bool   queue_insert         (thread t);
 extern void*  create_kernel_stack  ();
 extern void   thread_sleep         (uint32_t ms);
 extern thread queue_remove		   ();
+extern void kill_thread();
 
 //============================================================================
 //    INTERFACE OBJECT CLASS DEFINITIONS

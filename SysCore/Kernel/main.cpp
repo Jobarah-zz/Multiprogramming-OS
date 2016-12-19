@@ -217,8 +217,12 @@ void rect32 (int x, int y, int w, int h, int col) {
 void kthread_1 () {
 	int col = 0;
 	bool dir = true;
+	int counter = 0;
 	while(1) {
 		rect32(200,250,100,100,col << 16);
+		counter++;
+		if(counter == 1000) 
+			kill_thread();
 		if (dir) {
 			if (col++ == 0xfe)
 				dir=false;
@@ -233,7 +237,11 @@ void kthread_1 () {
 void kthread_2 () {
 	int col = 0;
 	bool dir = true;
+	int counter = 0;
 	while(1) {
+		counter++;
+		if(counter == 1000) 
+			kill_thread();
 		rect32(350,250,100,100,col << 8);
 		if (dir) {
 			if (col++ == 0xfe)
@@ -242,7 +250,6 @@ void kthread_2 () {
 		else
 			if (col-- == 1)
 				dir=true;
-		
 	}
 }
 
@@ -250,7 +257,11 @@ void kthread_2 () {
 void kthread_3 () {
 	int col = 0;
 	bool dir = true;
+	int counter = 0;
 	while(1) {
+		counter++;
+		if(counter == 1000) 
+		kill_thread();
 		rect32(500,250,100,100,col);
 		if (dir) {
 			if (col++ == 0xfe)

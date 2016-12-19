@@ -58,6 +58,12 @@ thread*  _currentTask;
 thread   _currentThreadLocal;
 process  _processList [PROC_MAX];
 
+bool isDone = true;
+
+extern void kill_thread() {
+	isDone = true;
+}
+
 //============================================================================
 //    INTERFACE DATA
 //============================================================================
@@ -303,32 +309,48 @@ void scheduler_initialize(void) {
 	setvect (32, scheduler_isr, 0x80);
 }
 
+void FIFO() {
+	if(isDone) {
+		queue_remove();
+		_currentThreadLocal = queue_get();
+		isDone = false;
+	}
+}
+
+void RoudRobin() {
+	queue_remove();
+	queue_insert(_currentThreadLocal);
+	_currentThreadLocal = queue_get();
+}
+
 /* schedule next task. */
 void dispatch () {
 
-	/* We do Round Robin here, just remove and insert. */
-next_thread:
-	queue_remove();
-	if(_currentThreadLocal.life_span == 1000) return;
-	_currentThreadLocal.life_span++;
-	queue_insert(_currentThreadLocal);
-	_currentThreadLocal = queue_get();
-	/* make sure this thread is not blocked. */
-	if (_currentThreadLocal.state & THREAD_BLOCK_STATE) {
+//	/* We do Round Robin here, just remove and insert. */
+//next_thread:
+//	queue_remove();
+//	if(_currentThreadLocal.life_span == 1000) return;
+//	_currentThreadLocal.life_span++;
+//	queue_insert(_currentThreadLocal);
+//	_currentThreadLocal = queue_get();
+//	/* make sure this thread is not blocked. */
+//	if (_currentThreadLocal.state & THREAD_BLOCK_STATE) {
+//
+//		/* adjust time delta. */
+//		if (_currentThreadLocal.sleepTimeDelta > 0)
+//			_currentThreadLocal.sleepTimeDelta--;
+//
+//		/* should we wake thread? */
+//		if (_currentThreadLocal.sleepTimeDelta == 0) {
+//			thread_wake();
+//			return;
+//		}
+//
+//		/* not yet, go to next thread. */
+//		goto next_thread;
+//	}
 
-		/* adjust time delta. */
-		if (_currentThreadLocal.sleepTimeDelta > 0)
-			_currentThreadLocal.sleepTimeDelta--;
-
-		/* should we wake thread? */
-		if (_currentThreadLocal.sleepTimeDelta == 0) {
-			thread_wake();
-			return;
-		}
-
-		/* not yet, go to next thread. */
-		goto next_thread;
-	}
+	FIFO();
 }
 
 /* gets called for each clock tick. */
