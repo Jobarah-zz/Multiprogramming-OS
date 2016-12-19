@@ -190,10 +190,20 @@ void _cdecl kmain (multiboot_info* bootinfo) {
 	/* init scheduler. */
 	scheduler_initialize ();
 
-	/* create kernel threads. */
-	queue_insert (thread_create(kthread_1, (uint32_t) create_kernel_stack(),true));
-	queue_insert (thread_create(kthread_2, (uint32_t) create_kernel_stack(),true));
-	queue_insert (thread_create(kthread_3, (uint32_t) create_kernel_stack(),true));
+	/*thread creation. */
+	thread thread1 = thread_create(kthread_1, (uint32_t) create_kernel_stack(),true);
+	thread thread2 = thread_create(kthread_2, (uint32_t) create_kernel_stack(),true);
+	thread thread3 = thread_create(kthread_3, (uint32_t) create_kernel_stack(),true);
+
+	/*priority definition. */
+	thread1.priority = 3;
+	thread2.priority = 1;
+	thread3.priority = 2;
+
+	/* ready queue insertion. */
+	queue_insert (thread1);
+	queue_insert (thread2);
+	queue_insert (thread3);
 
 	/* execute idle thread. */
 	execute_idle();

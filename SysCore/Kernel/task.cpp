@@ -133,6 +133,24 @@ thread queue_get() {
 	return _readyQueue[_queue_first % THREAD_MAX];
 }
 
+/****SORT QUEUE*****************************************/
+void prioritySort() {
+	int c, d;
+	thread swap;
+  for (c = 0 ; c < MAX_THREAD; c++)
+  {
+	  for (d = 0 ; d < MAX_THREAD- 1; d++)
+    {
+		if (_readyQueue[d].priority > _readyQueue[d+1].priority)
+      {
+        swap			 = _readyQueue[d];
+        _readyQueue[d]   = _readyQueue[d+1];
+        _readyQueue[d+1] = swap;
+      }
+    }
+  }
+}
+
 /*** SCHEDULER *****************************************/
 
 void _cdecl     scheduler_isr ();
@@ -298,6 +316,7 @@ void scheduler_initialize(void) {
 
 	/* create idle thread and add it. */
 	_idleThread = thread_create(idle_task, (uint32_t) create_kernel_stack(), true);
+	_idleThread.priority = 10;
 
 	/* set current thread to idle task and add it. */
 	_currentThreadLocal = _idleThread;
@@ -317,40 +336,25 @@ void FIFO() {
 	}
 }
 
-void RoudRobin() {
+void ROUND_ROBIN () {
 	queue_remove();
 	queue_insert(_currentThreadLocal);
 	_currentThreadLocal = queue_get();
 }
 
+void FIFO_PRIORITY() {
+	prioritySort();
+	FIFO();
+}
+
+void ROUND_ROBIN_PRIORITY() {
+	prioritySort();
+	ROUND_ROBIN();
+}
+
 /* schedule next task. */
 void dispatch () {
-
-//	/* We do Round Robin here, just remove and insert. */
-//next_thread:
-//	queue_remove();
-//	if(_currentThreadLocal.life_span == 1000) return;
-//	_currentThreadLocal.life_span++;
-//	queue_insert(_currentThreadLocal);
-//	_currentThreadLocal = queue_get();
-//	/* make sure this thread is not blocked. */
-//	if (_currentThreadLocal.state & THREAD_BLOCK_STATE) {
-//
-//		/* adjust time delta. */
-//		if (_currentThreadLocal.sleepTimeDelta > 0)
-//			_currentThreadLocal.sleepTimeDelta--;
-//
-//		/* should we wake thread? */
-//		if (_currentThreadLocal.sleepTimeDelta == 0) {
-//			thread_wake();
-//			return;
-//		}
-//
-//		/* not yet, go to next thread. */
-//		goto next_thread;
-//	}
-
-	FIFO();
+	ROUND_ROBIN();
 }
 
 /* gets called for each clock tick. */
