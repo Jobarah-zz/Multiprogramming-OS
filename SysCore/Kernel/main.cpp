@@ -197,7 +197,7 @@ void _cdecl kmain (multiboot_info* bootinfo) {
 
 	/*priority definition. */
 	thread1.priority = 3;
-	thread2.priority = 1;
+	thread2.priority = 4;
 	thread3.priority = 2;
 
 	/* ready queue insertion. */

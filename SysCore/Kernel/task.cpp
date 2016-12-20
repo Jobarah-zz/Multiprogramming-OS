@@ -45,6 +45,17 @@ extern void tss_set_stack (uint16_t kernelSS, uint16_t kernelESP);
 #define PROC_INVALID_ID -1
 #define TIME_QUANTUM     1
 
+
+/*==========================================Custom Defines========================================*/
+
+
+#define FIFO_ALG					1
+#define ROUND_ROBIN_ALG				2
+#define PRIORITIZED_FIFO_ALG		3
+#define PRIORITIZED_ROUND_ROBIN_ALG 4
+
+/*================================================================================================*/
+
 /* we limit number of processes and threads since we dont
 have a proper heap allocator. This should be dynamically
 allocated from non-paged pool. Note MAX_THREAD is different;
@@ -60,9 +71,13 @@ process  _processList [PROC_MAX];
 
 bool isDone = true;
 
+/*====================Custom Function to indecate from user level when a thread dies===============*/
+
 extern void kill_thread() {
 	isDone = true;
 }
+
+/*=================================================================================================*/
 
 //============================================================================
 //    INTERFACE DATA
@@ -327,6 +342,16 @@ void scheduler_initialize(void) {
 	old_isr = getvect(32);
 	setvect (32, scheduler_isr, 0x80);
 }
+/*================================================================================================================*/
+bool queue_insert_priority(thread t) {
+	_readyQueue[_queue_last % THREAD_MAX] = t;
+	_queue_last++;
+	prioritySort();
+	return true;
+}
+
+/*===============================================Scheduling Algorithms=============================================*/
+
 
 void FIFO() {
 	if(isDone) {
@@ -348,13 +373,41 @@ void FIFO_PRIORITY() {
 }
 
 void ROUND_ROBIN_PRIORITY() {
-	prioritySort();
-	ROUND_ROBIN();
+	queue_remove();
+	queue_insert(_currentThreadLocal);
+	_currentThreadLocal = queue_get();
 }
+
+/*=================================================================================================================*/
+
+/*FIFO_ALG					1
+ROUND_ROBIN_ALG				2
+PRIORITIZED_FIFO_ALG		3
+PRIORITIZED_ROUND_ROBIN_ALG 4
+*/
+
+int ALGORITHM = PRIORITIZED_ROUND_ROBIN_ALG;
+int First_Sort = 0;
 
 /* schedule next task. */
 void dispatch () {
-	ROUND_ROBIN();
+	if(ALGORITHM == FIFO_ALG) {
+
+		FIFO();
+	} else if (ALGORITHM == ROUND_ROBIN_ALG) {
+
+		ROUND_ROBIN();
+	} else if (ALGORITHM == PRIORITIZED_FIFO_ALG) {
+
+		FIFO_PRIORITY();
+	} else if (ALGORITHM == PRIORITIZED_ROUND_ROBIN_ALG) {
+		First_Sort++;
+		if(First_Sort==1) {
+			prioritySort();
+		}
+
+		ROUND_ROBIN_PRIORITY();
+	}
 }
 
 /* gets called for each clock tick. */
